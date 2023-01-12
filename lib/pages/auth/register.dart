@@ -1,8 +1,12 @@
 import 'package:chat_app/pages/auth/login.dart';
+import 'package:chat_app/service/auth_service.dart';
 import 'package:flutter/material.dart';
 
+import '../../helper/helper_function.dart';
 import '../../widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
+
+import '../home.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -11,10 +15,12 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 class _RegisterPageState extends State<RegisterPage> {
+  bool _isLoading = false;
   final formKey = GlobalKey<FormState>();
   String email = "";
   String password = "";
   String fullName = "";
+  AuthService authService = AuthService();
   @override
   Widget build(BuildContext context) {
 
@@ -24,7 +30,11 @@ class _RegisterPageState extends State<RegisterPage> {
             .of(context)
             .primaryColor,
       ),
-      body: SingleChildScrollView(
+      body:  _isLoading
+          ? Center(
+          child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor))
+          : SingleChildScrollView(
         child: Padding(
           padding:
           const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
@@ -166,8 +176,30 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
   }
-  register(){
+  register() async{
+    if (formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+      await authService
+          .registerUserWithEmailandPassword(fullName, email, password)
+          .then((value) async {
+        if (value == true) {
+          // saving the shared preference state
+          await HelperFunctions.saveUserLoggedInStatus(true);
+          await HelperFunctions.saveUserEmailSF(email);
+          await HelperFunctions.saveUserNameSF(fullName);
+          nextScreenReplace(context, const Home());
 
+
+        } else {
+          showSnackbar(context, Colors.red, value);
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
   }
 
 
