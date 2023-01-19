@@ -281,7 +281,7 @@ class _HomePageState extends State<HomePage> {
         });
   }
 
-  groupList() {
+   groupList() {
     return StreamBuilder(
       stream: groups,
       builder: (context, AsyncSnapshot snapshot) {
